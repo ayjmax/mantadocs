@@ -1,0 +1,35 @@
+@use 'sass:math';
+/*
+* Strips unit off of a value
+*/
+@function strip-unit($value) {
+    @return math.div($value, ($value * 0 + 1));
+}
+/*
+* Creates clamp based on boundary of window sizes and desired min/max font sizes
+* Takes the viewport widths in pixels and the font sizes in rem
+*/
+@function clampBuilder($minWidthPx, $maxWidthPx, $minFontSizeRem, $maxFontSizeRem) {
+    // Extract numeric values
+    $minWidthPxValue: if(unitless($minWidthPx), $minWidthPx, strip-unit($minWidthPx));
+    $maxWidthPxValue: if(unitless($maxWidthPx), $maxWidthPx, strip-unit($maxWidthPx));
+    $minFontSizeValue: if(unitless($minFontSizeRem), $minFontSize, strip-unit($minFontSizeRem));
+    $maxFontSizeValue: if(unitless($maxFontSizeRem), $maxFontSize, strip-unit($maxFontSizeRem));
+    $pixelsPerRem: 16; // TODO: Consider whether this should be hard-coded or not...
+
+    $minWidth: math.div($minWidthPxValue, $pixelsPerRem);
+    $maxWidth: math.div($maxWidthPxValue, $pixelsPerRem);
+
+    $slope: math.div(($maxFontSizeValue - $minFontSizeValue), ($maxWidth - $minWidth));
+    $yAxisIntersection: -$minWidth * $slope + $minFontSizeValue;
+
+    @return clamp(#{$minFontSizeRem}, #{$yAxisIntersection}rem + #{$slope * 100}vw, #{$maxFontSizeRem});
+}
+
+
+/* Breakpoints */
+$screen-mobile: 430px;
+$screen-xs: 600px;
+$screen-sm: 800px;
+$screen-md: 992px;
+$screen-lg: 1200px;
